@@ -1,0 +1,117 @@
+---
+title: "Module 2 Assigntment 1"
+author: "Lynsey Scheneman"
+date: "2022-09-9"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###
+Back Savers is a company that produces backpacks primarily for students. They are considering offering some combination of two different models—the Collegiate and the Mini. Both are made out of the same rip-resistant nylon fabric. Back Savers has a long-term contract with a supplier of the nylon and receives a 5000 square-foot shipment of the material each week. Each Collegiate requires 3 square feet while each Mini requires 2 square feet. The sales forecasts indicate that at most 1000 Collegiates and 1200 Minis can be sold per week. Each Collegiate requires 45 minutes of labor to produce and generates a unit profit of $32. Each Mini requires 40 minutes of labor and generates a unit profit of $24. Back Savers has 35 laborers that each provides 40 hours of labor per week. Management wishes to know what quantity of each type of backpack to produce per week. 
+
+
+# Clearly define the decision variables 
+how many collegiate (x1) and mini (x2) backpacks to produce per week
+
+# What is the objective function? 
+The objective function is to determine how many of each backpack must be produced to achieve maximum profit. 
+
+Maximize 32(x1) + 24(x2)
+
+# What are the constraints? 
+Demand: 
+x1 <= 1000
+x2 <= 1200
+
+Rip-resistant nylon fabric: 
+3(x1)+ 2(x2) <= 5000
+
+Labor: 
+45(x1) + 40(x2) <= 84000 (35 people * 40 hours * 60 minutes)
+
+x1 >= 0 
+x2 >= 0 
+
+# Write down the full mathematical formulation for this LP problem.
+
+Let 
+
+x1 = # of collegiate backpacks to produce each week
+x2 = # of mini backpacks to produce each week
+
+Max 
+
+Z = 32(x1) + 24(x2)
+
+Subject to 
+
+x1 <= 1000
+x2 <= 1200
+3(x1)+ 2(x2) <= 5000
+5(x1) + 40(x2) <= 84000
+x1 >= 0 
+x2 >= 0 
+
+
+###
+The Weigelt Corporation has three branch plants with excess production capacity. Fortunately, the corporation has a new product ready to begin production, and all three plants have this capability, so some of the excess capacity can be used in this way. This product can be made in three sizes--large, medium, and small--that yield a net unit profit of $420, $360, and $300, respectively. Plants 1, 2, and 3 have the excess capacity to produce 750, 900, and 450 units per day of this product, respectively, regardless of the size or combination of sizes involved. The amount of available in-process storage space also imposes a limitation on the production rates of the new product. Plants 1, 2, and 3 have 13,000, 12,000, and 5,000 square feet, respectively, of in-process storage space available for a day's production of this product. Each unit of the large, medium, and small sizes produced per day requires 20, 15, and 12 square feet, respectively. Sales forecasts indicate that if available, 900, 1,200, and 750 units of the large, medium, and small sizes, respectively, would be sold per day. At each plant, some employees will need to be laid off unless most of the plant’s excess production capacity can be used to produce the new product. To avoid layoffs if possible, management has decided that the plants should use the same percentage of their excess capacity to produce the new product.Management wishes to know how much of each of the sizes should be produced by each of the plants to maximize profit. 
+
+# Define the decision variables 
+The decision variables are the # of units of each new product (small, medium and large) that should be produced on each plant (1, 2, and 3) to maximize the company’s profit.
+
+x1 = small product, plant 1
+x2 = medium product, plant 1
+x3 = large product, plant 1
+x4 = small product, plant 2
+x5 = medium product, plant 2
+x6 = large product, plant 2
+x7 = small product, plant 3
+x8 = medium product, plant 3
+x9 = large product, plant 3
+
+# Formulate a linear programming model for this problem.
+
+Let 
+x1 = small product, plant 1
+x2 = medium product, plant 1
+x3 = large product, plant 1
+x4 = small product, plant 2
+x5 = medium product, plant 2
+x6 = large product, plant 2
+x7 = small product, plant 3
+x8 = medium product, plant 3
+x9 = large product, plant 3
+
+Max
+Z = 300(x1 + x4 + x7) + 360(x2 + x5 + x8) + 420(x3 + x6 + x9)
+
+Subject to 
+
+Excess Capacity 
+x1 + x2 + x3 <= 750 
+x4 + x5 + x6 <= 900
+x7 + x8 + x9 <= 450
+
+In-process Storage Space (SQ FT)
+12(x1) + 15(x2) + 20(x3) <= 13000
+12(x4) + 15(x5) + 20(x6) <= 12000
+12(x7) + 15(x8) + 20(x9) <= 5000
+
+Sales Forecast 
+x1 + x4 + x7 <= 750
+x2 + x5 + x8 <= 1200
+x3 + x6 + x9 <= 900
+
+Percentage 
+900(x1 + x2 + x3) - 750(x4 + x5 + x6) = 0
+450(x4 + x5 + x6) - 900(x7 + x8 + x9) = 0
+450(x1 + x2 + x3) - 750(x7 + x8 + x9) = 0
+
+Other
+x1,x2, x3, x4, x5, x6, x7, x8, x9 >= 0
+
