@@ -1,0 +1,90 @@
+---
+title: "Assignment 3, Module 6"
+author: "Lynsey Scheneman"
+date: "2022-10-4"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(lpSolveAPI)
+```
+
+Heart Start produces automated external defibrillators (AEDs) in each of two different plants (A and B). The unit production costs and monthly production capacity of the two plants are indicated in the table below. The AEDs are sold through three wholesalers. The shipping cost from each plant to the warehouse of each wholesaler along with the monthly demand from each wholesaler are also indicated in the table. How many AEDs should be produced in each plant, and how should they be distributed to each of the three wholesaler warehouses so as to minimizethe combined cost of production and shipping?
+Formulate and solve this transportation problem.
+
+# Define the decision variables 
+x1 = plant A, warehouse 1
+x2 = plant A, warehouse 2
+x3 = plant A, warehouse 3
+x4 = plant A, dummy warehouse
+x5 = plant B, warehouse 1
+x6 = plant B, warehouse 2
+x7 = plant B, warehouse 3
+x8 = plant B, dummy warehouse
+
+Supply is 220 and demand is 210. Because this is the case, we will use a dummy warehouse that has a monthly demand of 10. Thus, supply (220) = demand (220).
+
+#Define the objective function
+
+MIN
+Y = 22(x1) + 14(x2) + 30(x3) + 16(x5) + 20(x6) + 24(x7) + 600(x1 + x2 + x3 + x4) + 625(x5 + x6 + x7 + x8)
+
+
+
+#Define the constraints
+Production Capacity
+x1 + x2 + x3 + x4 = 100
+x5 + x6 + x7+ x8 = 120
+
+Monthly Demand
+x1 + x5 = 80
+x2 + x6 = 60 
+x3 + x7 = 70 
+x4 + x8 = 10 
+
+#Solve, identify variables and objective funtion
+
+```{r}
+dvar <- make.lp(0,8)
+set.objfn(dvar,c(622,614,630,0,641,645,649,0))
+lp.control(dvar,sense='min')
+```
+
+#Add constraints
+Production Capacity 
+```{r}
+add.constraint(dvar, c(1, 1, 1, 1, 0, 0, 0, 0), "=", 100)
+add.constraint(dvar, c(0, 0, 0, 0, 1, 1, 1, 1), "=", 120)
+```
+
+Monthly Demand
+```{r}
+add.constraint(dvar, c(1, 0, 0, 0, 1, 0, 0, 0), "=", 80)
+add.constraint(dvar, c(0, 1, 0, 0, 0, 1, 0, 0), "=", 60)
+add.constraint(dvar, c(0, 0, 1, 0, 0, 0, 1, 0), "=", 70)
+add.constraint(dvar, c(0, 0, 0, 1, 0, 0, 0, 1), "=", 10)
+```
+
+#Solve and Describe Results
+```{r}
+solve(dvar)
+```
+
+```{r}
+get.objective(dvar)
+get.variables(dvar)
+get.constraints(dvar)
+```
+
+Results: 
+Costs will equal $132,790
+
+x1 = 0 units
+x2 = 60 units
+x3 = 40 units
+x4 = 0 units
+x5 = 80 units
+x6 = 0 units
+x7 = 30 units
+x8 = 10 units (dummy capacity)
