@@ -1,0 +1,93 @@
+---
+title: "Assignment 4, Module 8"
+author: "Lynsey Scheneman"
+date: "2022-10-21"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+
+library(lpSolveAPI)
+library(Benchmarking)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Question 1: Formulate and perform DEA analysis under all DEA assumptions of FDH, CRS, VRS, IRS, DRS, and FRH
+Create Table
+```{r}
+x <- matrix(c(150,400,320,520,350,320,0.2,0.7,1.2,2.0,1.2,0.7), ncol = 2)
+y <- matrix(c(14000,14000,42000,28000,19000,14000, 3500,21000,10500,42000,25000,15000),ncol = 2)
+colnames(x) <- c("Staff Hours per Day", "Supplies per Day")
+colnames(y) <- c("Reimbursed Patient Days", "Privately Paid Patient Days")
+
+x
+y
+```
+
+Perform DEA analysis under the assumptions
+```{r}
+FDH <- dea(x, y, RTS = "fdh")
+CRS <- dea(x, y, RTS = "crs")
+VRS <- dea(x, y, RTS = "vrs")
+IRS <- dea(x, y, RTS = "irs")
+DRS <- dea(x, y, RTS = "drs")
+FRH <- dea(x, y, RTS = "add")
+```
+
+#Question 2: Determine the Peers and Lambdas under each of the above assumptions
+```{r}
+FDH
+peers(FDH)
+lambda(FDH)
+dea.plot.isoquant(x, y, RTS = "fdh")
+```
+
+```{r}
+CRS
+peers(CRS)
+lambda(CRS)
+dea.plot.isoquant(x,y,RTS="crs") 
+```
+
+```{r}
+VRS
+peers(VRS)
+lambda(VRS)
+dea.plot.isoquant(x,y,RTS="vrs")
+```
+
+```{r}
+IRS
+peers(IRS)
+lambda(IRS)
+dea.plot.isoquant(x,y,RTS="irs") 
+```
+
+```{r}
+DRS
+peers(DRS)
+lambda(DRS)
+dea.plot.isoquant(x,y,RTS="drs") 
+```
+
+```{r}
+FRH
+peers(FRH)
+lambda(FRH)
+```
+
+#Question 3: Summarize your results in a tabular format
+```{r}
+Summary <- read.csv("~/Desktop/Summary.csv", header=FALSE)
+Summary
+```
+
+#Question 4: Compare and contrast the above results
+After looking at the 6 DEA models, it can be determined that: 
+-under FDH and FRH, all facilities are efficent
+-under CRS and DRS, facilities 1-4 are efficent but facility 5 runs ar 97.75% and facility 6 runs ar 86.75%
+- under VRS and IRS, facilites 1-5 are efficent but facility 6 runs at 89.63 percent.
+
