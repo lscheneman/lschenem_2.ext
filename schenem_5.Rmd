@@ -1,0 +1,75 @@
+---
+title: 'Assignment: Module 9'
+author: "Lynsey Scheneman"
+date: "2022-11-01"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The Research and Development Division of the Emax Corporation has developed three new products. A decision now needs to be made on which mix of these products should be produced. Management wants primary consideration given to three factors: total profit, stability in the workforce, and achieving an increase in the company’s earnings next year from the $75 million achieved this year. In particular, using the units given in the following table, they want to Maximize Z = P - 6C - 3D, where 
+P = total (discounted) profit over the life of the new products,
+C = change (in either direction) in the current level of employment,
+D = decrease (if any) in next year’s earnings from the current year’s level.
+
+The amount of any increase in earnings does not enter into Z, because management is concerned primarily with just achieving some increase to keep the stockholders happy. (It has mixed feelings about a large increase that then would be difficult to surpass in subsequent years.)
+
+1. Define y1+ and y1-, respectively, as the amount over (if any) and the amount under (if any) the employment level goal. Define y2+ and y2- in the same way for the goal regarding  earnings next year. Define x1, x2, and x3 as the production rates of Products 1, 2, and 3, respectively. With these definitions, use the goal programming technique to express y1+, y1-, y2+ and y2- algebraically in terms of x1, x2, and x3. Also express P in terms of x1, x2,and x3.
+2. Express management’s objective function in terms of x1, x2, x3, y1+, y1-, y2+ and y2-.
+3. Formulate and solve the linear programming model. What are your findings?
+
+#Question 1
+Maximize Z = P - 6C - 3D, where 
+P = total (discounted) profit over the life of the new products,
+C = change (in either direction) in the current level of employment,
+D = decrease (if any) in next year’s earnings from the current year’s level
+
+Subject to: 
+Employment Level Goal: 6x1 + 4x2 + 5x3 = 50
+Earnings Next Year Goal: 8x1 + 7x2 + 5x3 >= 75
+
+Production Rates:
+y1 = 6(x1) + 4(x2) + 5(x3) - 50
+y2 = 8(x1) + 7(x2) + 5(x3) - 75
+
+Weights: 
+(P) = 20(x1) + 15(x2) + 25(x3)
+(C) = (+/-) 6
+(D) = (-) 3
+
+#Question 2
+Maximize Z = P - 6C - 3D
+Maximize Z = (20(x1) + 15(x2) + 25(x3)) - 6(y1+) - 6(y1-) - 3(y2-)
+
+#Question 3
+Solve
+```{r}
+library(lpSolveAPI)
+```
+
+```{r}
+dvar <- make.lp(2, 6)
+set.objfn(dvar, c(20,15,25,-6,-6,-3))
+lp.control(dvar, sense='max')
+```
+
+```{r}
+add.constraint(dvar, c(6,4,5,-1,1,0),"=",50)
+add.constraint(dvar, c(8,7,5,0,0,1), "=", 75)
+```
+
+```{r}
+solve(dvar)
+get.variables(dvar)
+get.objective(dvar)
+```
+
+#Findings  
+1. Products (x1, x2, x3): Products 1 and 2 should not be produced and product 3 should be produced at 15 for maximum profit. 
+2. The goal was to keep the employment level at 50 hundred employees, however, this was exceeded by 25 hundred employees. 
+3. y2 was 0 so there was no increase or decrease in next years earnings. 
+4. The objective function states that profit from firm maximixation is $225 million. 
