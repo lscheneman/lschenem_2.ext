@@ -1,0 +1,95 @@
+---
+title: "schenem_6"
+author: "Lynsey Scheneman"
+date: "2022-11-13"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(lpSolveAPI)
+```
+
+AP is a shipping service that guarantees overnight delivery of packages in the continental US.The company has various hubs at major cities and airports across the country. Packages are received at hubs, and then shipped to intermediate hubs or to their final destination.The manager of the AP hub in Cleveland is concerned about labor costs, and is interested in determining the most effective way to schedule workers. The hub operates seven days a week, and the number of packages it handles varies from one day to another. The table below provides an estimate of the number of workers needed each day of the week.
+Sunday = 18 Workers 
+Monday = 27 Workers
+Tuesday = 22 Workers 
+Wednesday = 26 Workers 
+Thursday = 25 Workers
+Friday = 21 Workers
+Saturday = 19 Workers
+Package handlers at AP are guaranteed a five-day work week with two consecutive days off. The base wage for the handlers is $750 per week. Workers working on Saturday or Sunday receive an additional $25 per day. The possible shifts and salaries for package handlers are:
+Shift 1, $775
+Shift 2, $800
+Shift 3, $800
+Shift 4, $800
+Shift 5, $800
+Shift 6, $775
+Shift 7, $750
+
+Q: The manager wants to keep the total wage expenses as low as possible while ensuring that there are sufficient number of workers available each day. Formulate and solve the problem. What was the total cost? How many workers are available each day? Hint: The number of available workers each day can exceed, but can not be below the required
+amount.
+
+#Formulate Problem
+
+x1 = Shift 1
+x2 = Shift 2
+x3 = Shift 3       
+x4 = Shift 4
+x5 = Shift 5
+x6 = Shift 6
+x7 = Shift 7
+
+MIN: 775(x1) + 800(x2) + 800(x3) + 800(x4) + 800(x5) + 775(x6) + 750(x7)
+
+Subject to:
+
+    X2+ X3+ X4+ X5+ X6     >= 18  Sunday
+    
+        X3+ X4+ X5+ X6+ X7 >= 27  Monday
+        
+X1+         X4+ X5+ X6+ X7 >= 22  Tuesday
+
+X1+ X2+         X5+ X6+ X7 >= 26  Wednesday
+  
+X1+ X2+ X3+         X6+ X7 >= 25  Thursday
+  
+X1+ X2+ X3+ X4+         X7 >= 21   Friday
+  
+X1+ X2+ X3+ X4+ X5         >= 19   Saturday
+  
+#Solve Problem
+```{r}
+dvar <- make.lp(7,7)
+set.objfn(dvar, c(775, 800, 800, 800, 800, 775, 750))
+lp.control(dvar, sense = 'min')
+```
+
+```{r}
+add.constraint(dvar, c(0,1,1,1,1,1,0), ">=", 18)
+add.constraint(dvar, c(0,0,1,1,1,1,1), ">=", 27)
+add.constraint(dvar, c(1,0,0,1,1,1,1), ">=", 22)
+add.constraint(dvar, c(1,1,0,0,1,1,1), ">=", 26)
+add.constraint(dvar, c(1,1,1,0,0,1,1), ">=", 25)
+add.constraint(dvar, c(1,1,1,1,0,0,1), ">=", 21)
+add.constraint(dvar, c(1,1,1,1,1,0,0), ">=", 19)
+```
+
+```{r}
+solve(dvar)
+get.objective(dvar)
+get.variables(dvar)
+```
+
+#Explaination of Results
+Minimum Total Cost: $25,175 
+Availiable Workers Each Day: (rounded up to account for a whole person)
+x1 = Shift 1 = 2 Workers
+x2 = Shift 2 = 4 Workers
+x3 = Shift 3 = 7 Workers
+x4 = Shift 4 = 0 Workers
+x5 = Shift 5 = 8 Workers
+x6 = Shift 6 = 1 Worker
+x7 = Shift 7 = 13 Workers
