@@ -1,0 +1,222 @@
+---
+title: "Final Exam"
+author: "Lynsey Scheneman"
+date: "2022-12-08"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(lpSolveAPI)
+```
+
+You have been tasked with the objective of forming groups. Assume that your class consists of 12 students, and you would like to form 4 groups of 3 students each. Your primary objective is to ensure that you maximize the chance that each group will do well on a class project. Here are the requirements to form groups:
+1. Each group should have exactly 3 students
+2. The objective is to maximize the chance of success for each group on a class project
+
+#Factors affect the success of groups
+
+1. GPA: Overall, ones GPA defines how well a student does in school. I ran GPA from min 1 to max 4 because a 1.0 GPA is generally considered the lowest passing grade. The higher the GPA, the higher chance the student has for success. 
+```{r}
+round(runif(12,min = 1, max = 4),2)
+```
+GPAs are as follows: 3.71 1.13 2.33 1.66 1.93 3.37 1.68 1.72 2.65 2.94 3.56 1.28
+
+2. Internship Experience: This shows if the student has prior internship experience in this field of study. It will be binary, where: 0 is no prior internship experience and 1 is internship experience. 
+```{r}
+round(runif(12,min = 0, max = 1),0)
+```
+Internship Experience is as follows: 1 0 1 0 0 0 0 1 0 1 1 1
+
+3. Class Attendance: The class term is 16 weeks long and meets twice a week. This means that there are a total number of 32 class meetings. The populated number represents the number of missed class periods so the students closest to 0 have a higher chance of success. 
+```{r}
+round(runif(12,min = 0, max = 32),0)
+```
+Class Attendance is as follows: 13 14 29 8 19 17 13 18 20 24 19 5
+
+The random data is as follows: 
+x1: GPA = 3.71, Internship Experience (1), Missed Class Days = 13
+x2: GPA = 1.13, No Internship Experience (0), Missed Class Days = 14
+x3: GPA = 2.33, Internship Experience (1), Missed Class Days = 29
+x4: GPA = 1.66, No Internship Experience (0), Missed Class Days = 8
+x5: GPA = 1.93, No Internship Experience (0), Missed Class Days = 19
+x6: GPA = 3.37, No Internship Experience (0), Missed Class Days = 17
+x7: GPA = 1.68, No Internship Experience (0), Missed Class Days = 13
+x8: GPA = 1.72, Internship Experience (1), Missed Class Days = 18
+x9: GPA = 2.65, No Internship Experience (0), Missed Class Days = 20
+x10: GPA = 2.94, Internship Experience (1), Missed Class Days = 24
+x11: GPA = 3.56, Internship Experience (1), Missed Class Days = 19
+x12: GPA = 1.28, Internship Experience (1), Missed Class Days = 5
+
+For this evaluation, I believe that the level of importance of these factors are as follows: GPA, Missed Class Days,Internship Experience. I will assign points to each factor. GPA is out of 4 points so the data will stay as is, Missed Class Days will be out of 2 points (calculation: (Missed Days * 2)/32), Internship Experience is worth 1 points and will stay as is. The higher the score, the higher chance of success. The new evaluations are as follows: 
+
+x1: 3.71 + 1 - .8125 = 3.8975
+x2: 1.13 + 0 - .875 = .255
+x3: 2.33 + 1 - 1.8125 = 1.5175
+x4: 1.66 + 0 - .5 = 1.16
+x5: 1.93 + 0 - 1.1875 = .7425
+x6: 3.37 + 0 - 1.0625 = 2.3075
+x7: 1.68 + 0 - .8125 = .8675
+x8: 1.72 + 1 - 1.125 = 1.595
+x9: 2.65 + 0 - 1.25 = 1.4
+x10: 2.94 + 1 - 1.5 = 2.44
+x11: 3.56 + 1 - 1.1875 = 3.3725
+x12: 1.28 + 1 - .3125 = 1.9675
+
+Next, I will calculate the class mean to show the average "score" of all students together. This is what each group must equal to ensure that each groups chance of success is maximized. I will then subtract the students score by the mean to show who is below the class average (will result in a negative number) and who is above the class average (will result in a positive number). 
+
+```{r}
+mean <- 1.793541667
+
+x1 <- 3.8975 - mean
+x2 <- .255 - mean
+x3 <- 1.5175 - mean
+x4 <- 1.16 - mean
+x5 <- .7425 - mean
+x6 <- 2.3075 - mean
+x7 <- .8675 - mean
+x8 <- 1.595 - mean
+x9 <- 1.4 - mean
+x10 <- 2.44 - mean
+x11 <- 3.3725 - mean
+x12 <- 1.9675 - mean
+
+x1
+x2
+x3
+x4
+x5
+x6
+x7
+x8
+x9
+x10
+x11
+x12
+```
+
+#Formulate Problem: 
+We will be using a minimization problem. 
+
+MIN: 2.10 (S1G1) + 2.10 (S1G2) + 2.10 (S1G3) + 2.10 (S1G4) + 1.54 (S2G1) + 1.54 (S2G2) + 1.54 (S2G3) + 1.54 (S2G4) + .28 (S3G1) + .28 (S3G2) + .28 (S3G3) + .28 (S3G4) + .63 (S4G1) + .63 (S4G2) + .63 (S4G3) + .63 (S4G4) +  1.05 (S5G1) + 1.05 (S5G2) + 1.05 (S5G3) + 1.05 (S5G4) + .51 (S6G1) + .51 (S6G2) + .51 (S6G3) + .51 (S6G4) + .93 (S7G1) + .93 (S7G2) + .93 (S7G3) + .93 (S7G4) + .20 (S8G1) + .20 (S8G2) + .20 (S8G3) + .20 (S8G4) + .39 (S9G1) + .39 (S9G2) + .39 (S9G3) + .39 (S9G4) + .65 (S10G1) + .65 (S10G2) + .65 (S10G3) + .65 (S10G4) + 1.58 (S11G1) + 1.58 (S11G2) + 1.58 (S11G3) + 1.58 (S11G4) + .17 (S12G1) + .17 (S12G2) + .17 (S12G3) + .17 (S12G4) 
+
+Subject to:
+
+Each Student must be used:
+
+(S1G1 + S1G2 + S1G3 + S1G4) + (S2G1 + S2G2 + S2G3 + S2G4) + (S3G1 + S3G2 + S3G3 + S3G4) + (S4G1 + S4G2 + S4G3 + S4G4) + (S5G1 + S5G2 + S5G3 + S5G4) + (S6G1 + S6G2 + S6G3 + S6G4) + (S7G1 + S7G2 + S7G3 + S7G4) + (S8G1 + S8G2 + S8G3 + S8G4) + (S9G1 + S9G2 + S9G3 + S9G4) + (S10G1 + S10G2 + S10G3 + S10G4) + (S11G1 + S11G2 + S11G3 + S11G4) + (S12G1 + S12G2 + S12G3 + S12G4) = 12
+
+Each Student must be used only once:
+
+S1G1 + S1G2 + S1G3 + S1G4 =1
+S2G1 + S2G2 + S2G3 + S2G4 =1 
+S3G1 + S3G2 + S3G3 + S3G4 =1 
+S4G1 + S4G2 + S4G3 + S4G4 =1
+S5G1 + S5G2 + S5G3 + S5G4 =1
+S6G1 + S6G2 + S6G3 + S6G4 =1
+S7G1 + S7G2 + S7G3 + S7G4 =1
+S8G1 + S8G2 + S8G3 + S8G4 =1
+S9G1 + S9G2 + S9G3 + S9G4 =1
+S10G1 + S10G2 + S10G3 + S10G4 =1
+S11G1 + S11G2 + S11G3 + S11G4 =1
+S12G1 + S12G2 + S12G3 + S12G4 =1
+
+Each Group can only have 3 students: 
+
+G1: S1G1 + S2G1 + S3G1 + S4G1 + S5G1 + S6G1 + S7G1 + S8G1 + S9G1 + S10G1 + S11G1 + S12G1 = 3
+G2: S1G2 + S2G2 + S3G2 + S4G2 + S5G2 + S6G2 + S7G2 + S8G2 + S9G2 + S10G2 + S11G2 + S12G2 = 3 
+G3: S1G3 + S2G3 + S3G3 + S4G3 + S5G3 + S6G3 + S7G3 + S8G3 + S9G3 + S10G3 + S11G3 + S12G3 = 3
+G4: S1G4 + S2G4 + S3G4 + S4G4 + S5G4 + S6G4 + S7G4 + S8G4 + S9G4 + S10G4 + S11G4 + S12G4 = 3
+
+Each Group must have a variance as close to zero as possible:
+
+(S1G1 + S2G1 + S3G1 + S4G1 + S5G1 + S6G1 + S7G1 + S8G1 + S9G1 + S10G1 + S11G1 + S12G1) - (S1G2 + S2G2 + S3G2 + S4G2 + S5G2 + S6G2 + S7G2 + S8G2 + S9G2 + S10G2 + S11G2 + S12G2) = 0
+(S1G2 + S2G2 + S3G2 + S4G2 + S5G2 + S6G2 + S7G2 + S8G2 + S9G2 + S10G2 + S11G2 + S12G2) - (S1G3 + S2G3 + S3G3 + S4G3 + S5G3 + S6G3 + S7G3 + S8G3 + S9G3 + S10G3 + S11G3 + S12G3) = 0
+(S1G2 + S2G2 + S3G2 + S4G2 + S5G2 + S6G2 + S7G2 + S8G2 + S9G2 + S10G2 + S11G2 + S12G2) - (S1G4 + S2G4 + S3G4 + S4G4 + S5G4 + S6G4 + S7G4 + S8G4 + S9G4 + S10G4 + S11G4 + S12G4) = 0
+(S1G1 + S2G1 + S3G1 + S4G1 + S5G1 + S6G1 + S7G1 + S8G1 + S9G1 + S10G1 + S11G1 + S12G1) - (S1G3 + S2G3 + S3G3 + S4G3 + S5G3 + S6G3 + S7G3 + S8G3 + S9G3 + S10G3 + S11G3 + S12G3) = 0
+(S1G1 + S2G1 + S3G1 + S4G1 + S5G1 + S6G1 + S7G1 + S8G1 + S9G1 + S10G1 + S11G1 + S12G1) - (S1G4 + S2G4 + S3G4 + S4G4 + S5G4 + S6G4 + S7G4 + S8G4 + S9G4 + S10G4 + S11G4 + S12G4) = 0
+(S1G3 + S2G3 + S3G3 + S4G3 + S5G3 + S6G3 + S7G3 + S8G3 + S9G3 + S10G3 + S11G3 + S12G3) - (S1G4 + S2G4 + S3G4 + S4G4 + S5G4 + S6G4 + S7G4 + S8G4 + S9G4 + S10G4 + S11G4 + S12G4) = 0
+
+Decision is Yes or No:
+
+0 = No, student is not in Group
+1 = Yes, Student is in Group
+
+#Solve Problem
+```{r}
+dvar <- make.lp(0, 48)
+set.objfn(dvar, c(2.10, 2.10, 2.10, 2.10, 1.54, 1.54, 1.54, 1.54, .28, .28, .28, .28, .63, .63, .63, .63, 1.05, 1.05, 1.05, 1.05, .51, .51, .51, .51, .93, .93, .93, .93, .20, .20, .20, .20, .39, .39, .39, .39, .65, .65, .65, .65, 1.58, 1.58, 1.58, 1.58, .17, .17, .17, .17))
+lp.control(dvar, sense = 'min', all.bin=TRUE)
+```
+
+Add Constraints
+```{r}
+add.constraint(dvar, c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1), "=", 12)
+```
+
+```{r}
+add.constraint(dvar, c(1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0), "=", 1)
+add.constraint(dvar, c(0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0), "=", 1)
+add.constraint(dvar, c(0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0), "=", 1)
+add.constraint(dvar, c(0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0), "=", 1)
+add.constraint(dvar, c(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0), "=", 1)
+add.constraint(dvar, c(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0), "=", 1)
+add.constraint(dvar, c(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0), "=", 1)
+add.constraint(dvar, c(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0), "=", 1)
+add.constraint(dvar, c(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0), "=", 1)
+add.constraint(dvar, c(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0), "=", 1)
+add.constraint(dvar, c(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0), "=", 1)
+add.constraint(dvar, c(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1), "=", 1)
+```
+
+```{r}
+add.constraint(dvar, c(1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0), "=", 3)
+add.constraint(dvar, c(0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0), "=", 3)
+add.constraint(dvar, c(0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0), "=", 3)
+add.constraint(dvar, c(0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1), "=", 3)
+```
+
+```{r}
+add.constraint(dvar, c(1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0), "=", 0)
+add.constraint(dvar, c(1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0), "=", 0)
+add.constraint(dvar, c(1,0,0,-1,1,0,0,-1,1,0,0,-1,1,0,0,-1,1,0,0,-1,1,0,0,-1,1,0,0,-1,1,0,0,-1,1,0,0,-1,1,0,0,-1,1,0,0,-1,1,0,0,-1), "=", 0)
+add.constraint(dvar, c(0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0), "=", 0)
+add.constraint(dvar, c(0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1,0,1,0,-1), "=", 0)
+add.constraint(dvar, c(0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1,0,0,1,-1), "=", 0)
+```
+
+```{r}
+add.constraint(dvar, c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1), "=", 12)
+```
+
+Solve
+```{r}
+solve(dvar)
+get.objective(dvar)
+get.variables(dvar)
+```
+
+#Explanation of Results
+The Groups are: 
+
+Group 1: 
+x1: GPA = 3.71, Internship Experience (1), Missed Class Days = 13
+x2: GPA = 1.13, No Internship Experience (0), Missed Class Days = 14
+x11: GPA = 3.56, Internship Experience (1), Missed Class Days = 19
+
+Group 2: 
+x5: GPA = 1.93, No Internship Experience (0), Missed Class Days = 19
+x7: GPA = 1.68, No Internship Experience (0), Missed Class Days = 13
+x10: GPA = 2.94, Internship Experience (1), Missed Class Days = 24
+
+Group 3: 
+x4: GPA = 1.66, No Internship Experience (0), Missed Class Days = 8
+x6: GPA = 3.37, No Internship Experience (0), Missed Class Days = 17
+x9: GPA = 2.65, No Internship Experience (0), Missed Class Days = 20
+
+Group 4: 
+x3: GPA = 2.33, Internship Experience (1), Missed Class Days = 29
+x8: GPA = 1.72, Internship Experience (1), Missed Class Days = 18
+x12: GPA = 1.28, Internship Experience (1), Missed Class Days = 5
